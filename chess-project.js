@@ -15,7 +15,7 @@ function plot_it()  {
 	var left_pad = 40, right_pad = 40, y_pad = 40
 	var hm_width = hm_width-(left_pad+right_pad), hm_height = hm_height-2*y_pad;
 	d3.select('body').append('svg').attr('width', 1400).attr('height', 800).attr('transform', 'translate(5,5)')
-	d3.select('svg').append('g').attr('transform', 'translate('+left_pad+','+(y_pad)+')').attr('id', 'hm').append('rect').attr('width',hm_width).attr('height',hm_height).attr('fill','blue').attr('opacity',0.15)
+	d3.select('svg').append('g').attr('transform', 'translate('+left_pad+','+(y_pad)+')').attr('id', 'hm').append('rect').attr('width',hm_width).attr('height',hm_height).attr('fill','blue').attr('opacity',0.12)
 
 	opening_move_matrix = {}
 	white_move_domain = []
@@ -45,6 +45,8 @@ function plot_it()  {
 		}
 	}
 
+	flattened_move_matrix = white_move_domain.map(d => {white_move = d; return black_move_domain.map(d => {black_move = d; return {white_move:white_move,black_move:black_move,val:opening_move_matrix[white_move][black_move]['val'],games_count:opening_move_matrix[white_move][black_move]['total_games']}})}).flat()
+
 	hm_scale_x = d3.scaleBand()
 			.domain(white_move_domain)
 			.range([0,hm_width]).paddingInner(0.15).paddingOuter(0.15)
@@ -57,14 +59,30 @@ function plot_it()  {
 			.domain([-1,1])
 			.range([20,130])
 
-	hm_squares = d3.select('#hm').selectAll('.hm_squares').data(white_move_domain.map(d => {white_move = d; return black_move_domain.map(d => {black_move = d; return {white_move:white_move,black_move:black_move,val:opening_move_matrix[white_move][black_move]['val']}})}).flat())
+	count_lum_scale = d3.scaleLog().base(25)
+			.domain([1,d3.max(flattened_move_matrix.map(d => d.games_count))])
+			.range([85,40])
+
+
+	hm_squares = d3.select('#hm').selectAll('.hm_squares').data(flattened_move_matrix)
+
 
 	hm_squares.enter().append('rect')
 		.attr('x',d => hm_scale_x(d.white_move))
 		.attr('y', d => hm_scale_y(d.black_move))
 		.attr('width', hm_scale_x.bandwidth()).attr('height', hm_scale_y.bandwidth())
 		.attr('fill', d => d3.lab(win_scale(d.val),0,0))
-		.attr('opacity',d => {if (isNaN(d.val)) {return 0} else {return 100}})
+		.attr('opacity',d => {if (isNaN(d.val)) {return 0} else {return 100}}) 
+
+// Heatmap by game count
+
+/*
+	hm_squares.enter().append('rect')
+		.attr('x',d => hm_scale_x(d.white_move))
+		.attr('y', d => hm_scale_y(d.black_move))
+		.attr('width', hm_scale_x.bandwidth()).attr('height', hm_scale_y.bandwidth())
+		.attr('fill', d => d3.hcl(152,70,count_lum_scale(d.games_count)))
+		.attr('opacity',d => {if (isNaN(d.val) || d.games_count == 0) {return 0} else {return 100}}) */
 
 	d3.select('#hm').append('g')
 			.attr('id', 'topaxis')
@@ -75,4 +93,5 @@ function plot_it()  {
 			.attr('id', 'leftaxis')
 			.attr('transform', 'translate(0,'+(0)+')')
 			.call(d3.axisLeft(hm_scale_y))
+
 }
