@@ -6,9 +6,6 @@ function plot_it()  {
 		d.white_rating = +d.white_rating
 		d.black_rating = +d.black_rating
 		d.moves = d.moves.split(" ")
-		//if (typeof d.moves[1] === 'undefined') {console.log(d)}
-		//console.log(d.winner)
-		//d.winner = String(d.winner)
 	});
 
 	var hm_width = 800, hm_height = 600;
@@ -41,17 +38,19 @@ function plot_it()  {
 	\*-------------------------------------------------------------------------*/
 
 	opening_move_matrix = {}
-	white_move_domain = new Set()
-	black_move_domain = new Set()
+	white_move_domain = []
+	black_move_domain = []
 
 	for (game of chess_data) {
-		//console.log(game.moves[0])
 		white_move = game.moves[0], black_move = game.moves[1]
-		white_move_domain.add(game.moves[0])
-		black_move_domain.add(game.moves[1])
+
+		white_move_domain.push(white_move)
+		black_move_domain.push(black_move)
+
 		if (typeof opening_move_matrix[white_move] === 'undefined') {
 			opening_move_matrix[white_move] = {}
 		}
+
 		if (typeof opening_move_matrix[white_move][black_move] === 'undefined') {
 			opening_move_matrix[white_move][black_move] = {
 				'val': 0, 
@@ -59,8 +58,10 @@ function plot_it()  {
 				'games_list': []
 			}
 		}
+
 		opening_move_matrix[white_move][black_move]['total_games'] += 1
 		opening_move_matrix[white_move][black_move]['games_list'].push(game)
+
 		if (game.winner == 'white') {
 			opening_move_matrix[white_move][black_move]['val'] += 1
 		}
@@ -74,22 +75,23 @@ function plot_it()  {
 			opening_move_matrix[white_move][black_move]['val'] /= opening_move_matrix[white_move][black_move]['total_games']
 		}
 	}
-	
-	white_move_domain = [...white_move_domain]
-	black_move_domain = [...black_move_domain]
+
+	white_move_domain = [...(new Set(white_move_domain))]
+	black_move_domain = [...(new Set(black_move_domain))]
 
 	flattened_move_matrix = []
 	for (white_move of white_move_domain) {
 		for (black_move of black_move_domain)
 		{
-			if (!(typeof opening_move_matrix[white_move][black_move] === 'undefined'))
+			current_moves_info = opening_move_matrix[white_move][black_move]
+			if (!(typeof current_moves_info === 'undefined'))
 			{
 				flattened_move_matrix.push( {
 					white_move:white_move,
 					black_move:black_move,
-					val:opening_move_matrix[white_move][black_move]['val'],
-					games_count:opening_move_matrix[white_move][black_move]['total_games'],
-					games:opening_move_matrix[white_move][black_move]['games_list']
+					val:current_moves_info['val'],
+					games_count:current_moves_info['total_games'],
+					games:current_moves_info['games_list']
 				} )
 			}
 		}
@@ -123,13 +125,11 @@ function plot_it()  {
 
 	hm_squares.enter().append('rect')
 		.attr('class', 'hm_squares')
-		.attr('x',d => hm_scale_x(d.white_move))
-		.attr('y', d => hm_scale_y(d.black_move))
-		.attr('width', hm_scale_x.bandwidth()).attr('height', hm_scale_y.bandwidth())
+		.attr('x',d => hm_scale_x(d.white_move)).attr('width', hm_scale_x.bandwidth())
+		.attr('y',d => hm_scale_y(d.black_move)).attr('height',hm_scale_y.bandwidth())
 		.attr('fill', d => d3.lab(win_scale(d.val),0,0))
 
 	cur_mode = "wins"
-
 
 	/*-------------------------------------------------------------------------*\
 	|*                              HEATMAP  AXES                              *|
@@ -151,9 +151,8 @@ function plot_it()  {
 
 	d3.select('#hm').append('rect')
 		.attr('id', 'hm_button')
-		.attr('x', -40)
-		.attr('y', -40)
-		.attr('width', 30).attr('height',30)
+		.attr('x', -40).attr('width', 38)
+		.attr('y', -40).attr('height',38)
 		.attr('fill', d => d3.hcl(165,70,60))
 
 	swap_hm = function () {
@@ -189,7 +188,14 @@ function plot_it()  {
 
 // Cell Selection SVG
 	var eloBar_width = 400;
-	d3.select('svg').append('g').attr('transform', 'translate('+(1.5*left_pad+hm_width)+','+(y_pad)+')').attr('id', 'barELO').append('rect').attr('width',eloBar_width).attr('height',hm_height).attr('fill','blue').attr('opacity',0.15)
+	d3.select('svg').append('g')
+		.attr('transform', 'translate('+(1.5*left_pad+hm_width)+','+(y_pad)+')')
+		.attr('id', 'barELO')
+		.append('rect')
+			.attr('width',eloBar_width)
+			.attr('height',hm_height)
+			.attr('fill','blue')
+			.attr('opacity',0.15)
 
 // Cell Selection Scales
 	// each scale works the same for white and black players
