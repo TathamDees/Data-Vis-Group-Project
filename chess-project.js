@@ -1,5 +1,5 @@
 function plot_it()  {
-	
+
 	chess_data.forEach(d => {
 		d.rated = Boolean(d.rated)
 		d.turns = +d.turns
@@ -126,7 +126,7 @@ function plot_it()  {
 		.attr('y', d => hm_scale_y(d.black_move))
 		.attr('width', hm_scale_x.bandwidth()).attr('height', hm_scale_y.bandwidth())
 		.attr('fill', d => d3.lab(win_scale(d.val),0,0))
-		//.attr('opacity',d => {if (isNaN(d.val)) {return 0} else {return 100}}) 
+
 
 	cur_mode = "wins"
 // Heatmap by game count
@@ -178,6 +178,22 @@ function plot_it()  {
 
 	hm_button = d3.select('#hm_button')
 	hm_button.on('click', swap_hm);
+
+// Cell Selection SVG
+	var eloBar_width = 400;
+	d3.select('svg').append('g').attr('transform', 'translate('+(1.5*left_pad+hm_width)+','+(y_pad)+')').attr('id', 'barELO').append('rect').attr('width',eloBar_width).attr('height',hm_height).attr('fill','blue').attr('opacity',0.15)
+
+// Cell Selection Scales
+	// each scale works the same for white and black players
+	// white and black bars side by side in each bucket representing playertime
+
+	//band scale for the y axis (ELO buckets)
+		// Domain is from min to max ELO divided into segments (determine segments after seeing max & min)
+		// Range is from min to max y value (top to bottom of eloBar)
+
+	//linear scale for the x axis (each matchup's ELO distribution)
+		// Domain is from 0 to 100% of players in each bucket
+		// Range is from min to max x value (left to right of eloBar)
 
 }
 
