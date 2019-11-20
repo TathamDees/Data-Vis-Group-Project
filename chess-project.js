@@ -189,6 +189,14 @@ function plot_it()  {
 		.attr('points', (-left_pad-5)+","+(-y_pad-5)+" 10,"+(-y_pad-5)+" "+(-left_pad-5)+",10")
 		.attr('fill', d => d3.hcl(165,70,60))
 
+	d3.select('#hm').append('text')
+		.attr('id', 'hm_button_label')
+		.text('Switch Mode')
+		.attr('x', (0)).attr('y',(-14.5))
+		.attr('font-size', 11.8)
+		.attr('text-anchor', 'middle')
+		.attr('transform', 'rotate(-45)')
+
 	swap_hm = function () {
 		hm_squares2 = d3.select('#hm').selectAll('.hm_squares')
 		hm_button = d3.select('#hm_button')
