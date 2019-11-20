@@ -1,5 +1,12 @@
 function plot_it()  {
 
+
+/***********************************************************************************\
+|*                                                                                 *|
+|*                                      SETUP                                      *|
+|*                                                                                 *|	               
+\***********************************************************************************/
+
 	chess_data.forEach(d => {
 		d.rated = Boolean(d.rated)
 		d.turns = +d.turns
@@ -16,6 +23,12 @@ function plot_it()  {
 		.attr('width', 1400).attr('height', 800)
 		.attr('transform', 'translate(5,5)')
 
+/***********************************************************************************\
+|*                                                                                 *|
+|*                                     HEATMAP                                     *|
+|*                                                                                 *|	               
+\***********************************************************************************/
+
 	d3.select('svg').append('g')
 		.attr('transform', 'translate('+left_pad+','+(y_pad)+')')
 		.attr('id', 'hm')
@@ -24,14 +37,6 @@ function plot_it()  {
 			.attr('height',hm_height)
 			.attr('fill','blue')
 			.attr('opacity',0.12)
-
-
-/***********************************************************************************\
-|*                                                                                 *|
-|*                                     HEATMAP                                     *|
-|*                                                                                 *|	               
-\***********************************************************************************/
-
 
  	/*-------------------------------------------------------------------------*\
 	|*                            HEATMAP MOVE MATRIX                          *|
@@ -81,11 +86,9 @@ function plot_it()  {
 
 	flattened_move_matrix = []
 	for (white_move of white_move_domain) {
-		for (black_move of black_move_domain)
-		{
+		for (black_move of black_move_domain) {
 			current_moves_info = opening_move_matrix[white_move][black_move]
-			if (!(typeof current_moves_info === 'undefined'))
-			{
+			if (!(typeof current_moves_info === 'undefined')) {
 				flattened_move_matrix.push( {
 					white_move:white_move,
 					black_move:black_move,
@@ -147,12 +150,43 @@ function plot_it()  {
 
 	/*-------------------------------------------------------------------------*\
 	|*                           HEATMAP MODE BUTTON                           *|
-	\*-------------------------------------------------------------------------*/
+	\*-------------------------------------------------------------------------*/	
+	/*\
+		game_count_gradient = d3.select('#hm').append('linearGradient')
+	            .attr('id', 'game_count_gradient')
+	            .attr('x1', '0%')
+	            .attr('y1', '100%')
+	            .attr('x2', '100%')
+	            .attr('y2', '0%')
 
-	d3.select('#hm').append('rect')
+	    game_count_gradient.append('stop')
+	            .attr('offset', '0%')
+	            .attr('stop-color', d3.hcl(165,70,80))
+	            .attr('stop-opacity', 1)
+	    game_count_gradient.append('stop')
+	            .attr('offset', '100%')
+	            .attr('stop-color', d3.hcl(165,70,50))
+	            .attr('stop-opacity', 1)
+
+	    win_gradient = d3.select('#hm').append('linearGradient')
+	            .attr('id', 'win_gradient')
+	            .attr('x1', '0%')
+	            .attr('y1', '100%')
+	            .attr('x2', '100%')
+	            .attr('y2', '0%')
+
+	    win_gradient.append('stop')
+	            .attr('offset', '0%')
+	            .attr('stop-color', d3.lab(win_scale(-1),0,0))
+	            .attr('stop-opacity', 1)
+	    win_gradient.append('stop')
+	            .attr('offset', '100%')
+	            .attr('stop-color', d3.lab(win_scale(+1),0,0))
+	            .attr('stop-opacity', 1)
+	\*/
+	d3.select('#hm').append('polygon')
 		.attr('id', 'hm_button')
-		.attr('x', -40).attr('width', 38)
-		.attr('y', -40).attr('height',38)
+		.attr('points', (-left_pad-5)+","+(-y_pad-5)+" 10,"+(-y_pad-5)+" "+(-left_pad-5)+",10")
 		.attr('fill', d => d3.hcl(165,70,60))
 
 	swap_hm = function () {
