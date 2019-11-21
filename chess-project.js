@@ -20,8 +20,13 @@ function plot_it()  {
 	var hm_width = hm_width-(left_pad+right_pad), hm_height = hm_height-2*y_pad;
 
 	d3.select('body').append('svg')
-		.attr('width', 1400).attr('height', 800)
-		.attr('transform', 'translate(5,5)')
+		.attr('width', 1400).attr('height', 1000)
+		.attr('transform', 'translate(0,0)')
+		// .append('rect')
+		// 	.attr('fill','grey')
+		// 	.attr('opacity',0.05)
+		// 	.attr('width', 1.5*left_pad+hm_width+2.5*left_pad+hm_height/2.5+left_pad*3)
+		// 	.attr('height', y_pad*4+hm_height+y_pad+hm_height/2.5-5)
 
 /***********************************************************************************\
 |*                                                                                 *|
@@ -116,9 +121,17 @@ function plot_it()  {
 			.domain([-1,1])
 			.range([20,130])
 
-	count_lum_scale = d3.scaleLog().base(25)
-			.domain([1,d3.max(flattened_move_matrix.map(d => d.games_count))])
+	win_scale_axis = d3.scaleLinear()
+			.domain([1,-1])
+			.range([1,hm_height-1])
+
+	count_lum_scale = d3.scaleLog().base(20)
+			.domain([1,d3.max(flattened_move_matrix.map(d => d.games_count))]).nice()
 			.range([90,40])
+
+	count_lum_scale_axis = d3.scaleLog().base(20)
+		.domain([1,d3.max(flattened_move_matrix.map(d => d.games_count))]).nice()
+		.range([hm_height-1,1])
 
 	/*-------------------------------------------------------------------------*\
 	|*                              HEATMAP CELLS                              *|
@@ -139,40 +152,32 @@ function plot_it()  {
 	\*-------------------------------------------------------------------------*/
 
 	d3.select('#hm').append('g')
-			.attr('id', 'topaxis')
-			.attr('transform', 'translate(0,'+(0)+')')
-			.call(d3.axisTop(hm_scale_x))
+		.attr('id', 'topaxis')
+		.attr('transform', 'translate(0,'+(0)+')')
+		.call(d3.axisTop(hm_scale_x))
 
 	d3.select('#hm').append('g')
-			.attr('id', 'leftaxis')
-			.attr('transform', 'translate(0,'+(0)+')')
-			.call(d3.axisLeft(hm_scale_y))
+		.attr('id', 'leftaxis')
+		.attr('transform', 'translate(0,'+(0)+')')
+		.call(d3.axisLeft(hm_scale_y))
+
+	
+	/*-------------------------------------------------------------------------*\
+	|*                              HEATMAP TITLE                              *|
+	\*-------------------------------------------------------------------------*/
+
+
+
 
 	/*-------------------------------------------------------------------------*\
-	|*                           HEATMAP MODE BUTTON                           *|
-	\*-------------------------------------------------------------------------*/	
-	/*\
-		game_count_gradient = d3.select('#hm').append('linearGradient')
-	            .attr('id', 'game_count_gradient')
-	            .attr('x1', '0%')
-	            .attr('y1', '100%')
-	            .attr('x2', '100%')
-	            .attr('y2', '0%')
+	|*                           HEATMAP COLOR LEGEND                          *|
+	\*-------------------------------------------------------------------------*/
 
-	    game_count_gradient.append('stop')
-	            .attr('offset', '0%')
-	            .attr('stop-color', d3.hcl(165,70,80))
-	            .attr('stop-opacity', 1)
-	    game_count_gradient.append('stop')
-	            .attr('offset', '100%')
-	            .attr('stop-color', d3.hcl(165,70,50))
-	            .attr('stop-opacity', 1)
-
-	    win_gradient = d3.select('#hm').append('linearGradient')
+	win_gradient = d3.select('#hm').append('linearGradient')
 	            .attr('id', 'win_gradient')
 	            .attr('x1', '0%')
 	            .attr('y1', '100%')
-	            .attr('x2', '100%')
+	            .attr('x2', '0%')
 	            .attr('y2', '0%')
 
 	    win_gradient.append('stop')
@@ -183,7 +188,47 @@ function plot_it()  {
 	            .attr('offset', '100%')
 	            .attr('stop-color', d3.lab(win_scale(+1),0,0))
 	            .attr('stop-opacity', 1)
-	\*/
+
+	game_count_gradient = d3.select('#hm').append('linearGradient')
+	            .attr('id', 'game_count_gradient')
+	            .attr('x1', '0%')
+	            .attr('y1', '100%')
+	            .attr('x2', '0%')
+	            .attr('y2', '0%')
+
+	    game_count_gradient.append('stop')
+	            .attr('offset', '0%')
+	            .attr('stop-color', d3.hcl(165,70,90))
+	            .attr('stop-opacity', 1)
+	    game_count_gradient.append('stop')
+	            .attr('offset', '100%')
+	            .attr('stop-color', d3.hcl(165,70,40))
+	            .attr('stop-opacity', 1)
+
+	d3.select('#hm').append('g')
+		.attr('id', 'color_legend_group')
+		.attr('transform', 'translate('+(hm_width+left_pad/2)+',0)')
+		.append('rect')
+			.attr('id', 'color_legend')
+			.attr('width', (left_pad))
+			.attr('height',(hm_height))
+			.attr('fill','url(#win_gradient)')
+			//.attr('stroke','blue')
+
+	d3.select('#color_legend_group').append('g')
+			.attr('id', 'rightaxis')
+			.attr('transform', 'translate('+(y_pad)+',0)')
+			.call(d3.axisRight(win_scale_axis).tickFormat(d => {
+				if (d == 1) {return "1:0"}
+				else if (d == -1) {return "0:1"}
+				else if (d == 0) {return "1:1"}
+				else {return ""}
+			}))
+
+	/*-------------------------------------------------------------------------*\
+	|*                           HEATMAP MODE BUTTON                           *|
+	\*-------------------------------------------------------------------------*/	
+	
 	d3.select('#hm').append('polygon')
 		.attr('id', 'hm_button')
 		.attr('points', (-left_pad-5)+","+(-y_pad-5)+" 10,"+(-y_pad-5)+" "+(-left_pad-5)+",10")
@@ -192,6 +237,7 @@ function plot_it()  {
 	d3.select('#hm').append('text')
 		.attr('id', 'hm_button_label')
 		.text('Switch Mode')
+		.attr('pointer-events', 'none')
 		.attr('x', (0)).attr('y',(-14.5))
 		.attr('font-size', 11.8)
 		.attr('text-anchor', 'middle')
@@ -200,11 +246,17 @@ function plot_it()  {
 	swap_hm = function () {
 		hm_squares2 = d3.select('#hm').selectAll('.hm_squares')
 		hm_button = d3.select('#hm_button')
+		color_legend = d3.select('#color_legend')
+		color_legend_axis = d3.select('#color_legend_group').select('#rightaxis')
 		if (cur_mode == "wins") {
 			hm_squares2.transition().duration(300)
 				.attr('fill', d => d3.hcl(165,70,count_lum_scale(d.games_count)))
 			hm_button.transition().duration(300)
 				.attr('fill', d => d3.lab(win_scale(0),0,0))
+			color_legend
+				.attr('fill', d => 'url(#game_count_gradient)')
+			color_legend_axis
+				.call(d3.axisRight(count_lum_scale_axis))
 			cur_mode = "count"
 		}
 		else if (cur_mode == "count") {
@@ -212,6 +264,15 @@ function plot_it()  {
 				.attr('fill', d => d3.lab(win_scale(d.val),0,0))
 			hm_button.transition().duration(300)
 				.attr('fill', d => d3.hcl(165,70,60))
+			color_legend
+				.attr('fill', d => 'url(#win_gradient)')
+			color_legend_axis
+				.call(d3.axisRight(win_scale_axis).tickFormat(d => {
+					if (d == 1) {return "1:0"}
+					else if (d == -1) {return "0:1"}
+					else if (d == 0) {return "1:1"}
+					else {return ""}
+				}))
 			cur_mode = "wins"
 		}
 	}
@@ -225,17 +286,15 @@ function plot_it()  {
 |*	                                   ELO BARS                                    *|
 |*                                                                                 *|	               
 \***********************************************************************************/
-
-
-
+// alternate elo width : hm_width+left_pad*3+hm_width/2.5
 // Cell Selection SVG
-	var eloBar_width = 400;
+	var elo_bars_height = hm_width/2.5//400;
 	d3.select('svg').append('g')
-		.attr('transform', 'translate('+(1.5*left_pad+hm_width)+','+(y_pad)+')')
-		.attr('id', 'barELO')
+		.attr('transform', 'translate('+(left_pad)+','+(y_pad*2+hm_height)+')')
+		.attr('id', 'elo_bars')
 		.append('rect')
-			.attr('width',eloBar_width)
-			.attr('height',hm_height)
+			.attr('width',hm_width+left_pad*1.5)
+			.attr('height',elo_bars_height)
 			.attr('fill','blue')
 			.attr('opacity',0.15)
 
@@ -250,6 +309,42 @@ function plot_it()  {
 	//linear scale for the x axis (each matchup's ELO distribution)
 		// Domain is from 0 to 100% of players in each bucket
 		// Range is from min to max x value (left to right of eloBar)
+
+
+/***********************************************************************************\
+|*                                                                                 *|
+|*	                                   INFO BOX                                    *|
+|*                                                                                 *|	               
+\***********************************************************************************/
+
+
+	var info_box_width = hm_width/2.5//400;
+	d3.select('svg').append('g')
+		.attr('transform', 'translate('+(1.5*left_pad+hm_width+2.5*left_pad)+','+(y_pad)+')')
+		.attr('id', 'info_box')
+		.append('rect')
+			.attr('width',info_box_width)
+			.attr('height',hm_height)
+			.attr('fill','blue')
+			.attr('opacity',0.15)
+
+
+/***********************************************************************************\
+|*                                                                                 *|
+|*	                                  CHESS BOARD                                  *|
+|*                                                                                 *|	               
+\***********************************************************************************/
+
+
+	var chess_board_len = hm_width/2.5//400;
+	d3.select('svg').append('g')
+		.attr('transform', 'translate('+(1.5*left_pad+hm_width+2.5*left_pad)+','+(y_pad*2+hm_height)+')')
+		.attr('id', 'info_box')
+		.append('rect')
+			.attr('width',chess_board_len)
+			.attr('height',chess_board_len)
+			.attr('fill','blue')
+			.attr('opacity',0.15)
 
 }
 
