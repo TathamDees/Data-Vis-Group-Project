@@ -281,6 +281,10 @@ function plot_it()  {
 	hm_button.on('click', swap_hm);
 
 
+//TO-DO: 
+//       -ADD LABELS FOR EVERYTHING RELATED TO THE HEATMAP
+//		 -MAKE STUFF HAPPEN WHEN THE HEATMAP CELLS ARE HOVERED OVER
+
 /***********************************************************************************\
 |*                                                                                 *|
 |*	                                   ELO BARS                                    *|
@@ -301,6 +305,9 @@ function plot_it()  {
 // Cell Selection Scales
 	// each scale works the same for white and black players
 	// white and black bars side by side in each bucket representing playertime
+
+// FOR BUCKETS, MAKE THEM 100 EACH, MIN IS 701 MAX IS 2700 
+//        (I.E. [701-800,801-900,...,2501-2600,2601-2700])
 
 	//band scale for the y axis (ELO buckets)
 		// Domain is from min to max ELO divided into segments (determine segments after seeing max & min)
@@ -328,6 +335,13 @@ function plot_it()  {
 			.attr('fill','blue')
 			.attr('opacity',0.15)
 
+//TO-DO:
+//       -FIGURE OUT WHAT INFO TO INCLUDE
+//             (I.E. OPENING NAMES, TOTAL GAMES PLAYED, AVERAGE NUMBER OF MOVE BEFORE END OF GAME, ...?)
+//		 -MAKE DICTIONARY TO GET OPENING NAME FROM OPENING_ECO (OR FROM MOVES PLAYED)
+//		 -MAKE CHART DISPLAYING RELATIVE BLACK VICTORIES, WHITE VICTORIES, DRAWS (BAR CHART? PIE CHART?)
+//       -LABELS AND SUCH
+
 
 /***********************************************************************************\
 |*                                                                                 *|
@@ -346,5 +360,9 @@ function plot_it()  {
 			.attr('fill','blue')
 			.attr('opacity',0.15)
 
+//TO-DO: 
+//       -MAKE IT LOOK LIKE A CHESS BOARD
+//		 -FIGURE OUT HOW TO DISPLAY PIECES
+//		 -MAKE WAY FOR PIECES TO MOVE PROPERLY
 }
 
