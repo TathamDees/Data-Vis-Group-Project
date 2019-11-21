@@ -28,6 +28,13 @@ function plot_it()  {
 		// 	.attr('width', 1.5*left_pad+hm_width+2.5*left_pad+hm_height/2.5+left_pad*3)
 		// 	.attr('height', y_pad*4+hm_height+y_pad+hm_height/2.5-5)
 
+	bg_color = d3.hcl(250,55,50)
+	bg_opacity = 0.18
+
+	BLACK_COLOR = d3.lab(20, 0,0)
+	WHITE_COLOR = d3.lab(130,0,0)
+	DRAW_COLOR = d3.lab(d3.mean([BLACK_COLOR.l,WHITE_COLOR.l]),0,0)
+
 /***********************************************************************************\
 |*                                                                                 *|
 |*                                     HEATMAP                                     *|
@@ -40,8 +47,15 @@ function plot_it()  {
 		.append('rect')
 			.attr('width',hm_width)
 			.attr('height',hm_height)
-			.attr('fill','blue')
-			.attr('opacity',0.12)
+			.attr('fill',bg_color)
+			.attr('opacity',bg_opacity)
+
+	/*-------------------------------------------------------------------------*\
+	|*                             HEATMAP CONSTANTS                           *|
+	\*-------------------------------------------------------------------------*/
+
+	GAME_COUNT_LUM_RANGE  = [85,35]
+	WIN_RATIO_COLOR_RANGE = [BLACK_COLOR.l,WHITE_COLOR.l]
 
  	/*-------------------------------------------------------------------------*\
 	|*                            HEATMAP MOVE MATRIX                          *|
@@ -119,19 +133,37 @@ function plot_it()  {
 
 	win_scale = d3.scaleLinear()
 			.domain([-1,1])
-			.range([20,130])
+			.range(WIN_RATIO_COLOR_RANGE)
 
 	win_scale_axis = d3.scaleLinear()
-			.domain([1,-1])
-			.range([1,hm_height-1])
+			.domain([-1,1])
+			.range([hm_height-1,1])
 
 	count_lum_scale = d3.scaleLog().base(20)
 			.domain([1,d3.max(flattened_move_matrix.map(d => d.games_count))]).nice()
-			.range([90,40])
+			.range(GAME_COUNT_LUM_RANGE)
 
 	count_lum_scale_axis = d3.scaleLog().base(20)
-		.domain([1,d3.max(flattened_move_matrix.map(d => d.games_count))]).nice()
-		.range([hm_height-1,1])
+		.domain(count_lum_scale.domain())
+		.range([hm_height-1,0])
+
+	/*-------------------------------------------------------------------------*\
+	|*                               HEATMAP COLORS                            *|
+	\*-------------------------------------------------------------------------*/
+
+	games_count_color = function(games_num) {
+		return d3.hcl(170,60,count_lum_scale(games_num))
+	}
+	games_count_color.mid = function() {return d3.hcl(170,60,d3.mean(count_lum_scale.range()))}
+	games_count_color.min = function() {return d3.hcl(170,60,count_lum_scale.range()[0])}
+	games_count_color.max = function() {return d3.hcl(170,60,count_lum_scale.range()[1])}
+
+	win_color = function(win_var) {
+		return d3.lab(win_scale(win_var),0,0)
+	}
+	win_color.mid = function() {return d3.lab(d3.mean(win_scale.range()),0,0)}
+	win_color.min = function() {return d3.lab((win_scale.range()[0]),0,0)}
+	win_color.max = function() {return d3.lab((win_scale.range()[1]),0,0)}
 
 	/*-------------------------------------------------------------------------*\
 	|*                              HEATMAP CELLS                              *|
@@ -143,7 +175,7 @@ function plot_it()  {
 		.attr('class', 'hm_squares')
 		.attr('x',d => hm_scale_x(d.white_move)).attr('width', hm_scale_x.bandwidth())
 		.attr('y',d => hm_scale_y(d.black_move)).attr('height',hm_scale_y.bandwidth())
-		.attr('fill', d => d3.lab(win_scale(d.val),0,0))
+		.attr('fill', d => win_color(d.val))
 
 	cur_mode = "wins"
 
@@ -182,11 +214,11 @@ function plot_it()  {
 
 	    win_gradient.append('stop')
 	            .attr('offset', '0%')
-	            .attr('stop-color', d3.lab(win_scale(-1),0,0))
+	            .attr('stop-color', win_color.min())
 	            .attr('stop-opacity', 1)
 	    win_gradient.append('stop')
 	            .attr('offset', '100%')
-	            .attr('stop-color', d3.lab(win_scale(+1),0,0))
+	            .attr('stop-color', win_color.max())
 	            .attr('stop-opacity', 1)
 
 	game_count_gradient = d3.select('#hm').append('linearGradient')
@@ -198,11 +230,11 @@ function plot_it()  {
 
 	    game_count_gradient.append('stop')
 	            .attr('offset', '0%')
-	            .attr('stop-color', d3.hcl(165,70,90))
+	            .attr('stop-color', games_count_color.min())
 	            .attr('stop-opacity', 1)
 	    game_count_gradient.append('stop')
 	            .attr('offset', '100%')
-	            .attr('stop-color', d3.hcl(165,70,40))
+	            .attr('stop-color', games_count_color.max())
 	            .attr('stop-opacity', 1)
 
 	d3.select('#hm').append('g')
@@ -232,7 +264,7 @@ function plot_it()  {
 	d3.select('#hm').append('polygon')
 		.attr('id', 'hm_button')
 		.attr('points', (-left_pad-5)+","+(-y_pad-5)+" 10,"+(-y_pad-5)+" "+(-left_pad-5)+",10")
-		.attr('fill', d => d3.hcl(165,70,60))
+		.attr('fill', games_count_color.mid())
 
 	d3.select('#hm').append('text')
 		.attr('id', 'hm_button_label')
@@ -250,9 +282,9 @@ function plot_it()  {
 		color_legend_axis = d3.select('#color_legend_group').select('#rightaxis')
 		if (cur_mode == "wins") {
 			hm_squares2.transition().duration(300)
-				.attr('fill', d => d3.hcl(165,70,count_lum_scale(d.games_count)))
+				.attr('fill', d => games_count_color(d.games_count))
 			hm_button.transition().duration(300)
-				.attr('fill', d => d3.lab(win_scale(0),0,0))
+				.attr('fill', win_color.mid())
 			color_legend
 				.attr('fill', d => 'url(#game_count_gradient)')
 			color_legend_axis
@@ -261,9 +293,9 @@ function plot_it()  {
 		}
 		else if (cur_mode == "count") {
 			hm_squares2.transition().duration(300)
-				.attr('fill', d => d3.lab(win_scale(d.val),0,0))
+				.attr('fill', d => win_color(d.val))
 			hm_button.transition().duration(300)
-				.attr('fill', d => d3.hcl(165,70,60))
+				.attr('fill', games_count_color.mid())
 			color_legend
 				.attr('fill', d => 'url(#win_gradient)')
 			color_legend_axis
@@ -299,8 +331,8 @@ function plot_it()  {
 		.append('rect')
 			.attr('width',hm_width+left_pad*1.5)
 			.attr('height',elo_bars_height)
-			.attr('fill','blue')
-			.attr('opacity',0.15)
+			.attr('fill',bg_color)
+			.attr('opacity',bg_opacity)
 
 // Cell Selection Scales
 	// each scale works the same for white and black players
@@ -332,8 +364,8 @@ function plot_it()  {
 		.append('rect')
 			.attr('width',info_box_width)
 			.attr('height',hm_height)
-			.attr('fill','blue')
-			.attr('opacity',0.15)
+			.attr('fill',bg_color)
+			.attr('opacity',bg_opacity)
 
 //TO-DO:
 //       -FIGURE OUT WHAT INFO TO INCLUDE
@@ -357,8 +389,8 @@ function plot_it()  {
 		.append('rect')
 			.attr('width',chess_board_len)
 			.attr('height',chess_board_len)
-			.attr('fill','blue')
-			.attr('opacity',0.15)
+			.attr('fill',bg_color)
+			.attr('opacity',bg_opacity)
 
 //TO-DO: 
 //       -MAKE IT LOOK LIKE A CHESS BOARD
