@@ -413,12 +413,12 @@ function plot_it()  {
 		barData.push([barDatum.white_rating , barDatum.black_rating]);
 	});
 
-	console.log(wEloArray);
-	console.log(bEloArray);
+	// console.log(wEloArray);
+	// console.log(bEloArray);
 
-	console.log(barData);
+	// console.log(barData);
 
-	console.log(bucketArray);
+	// console.log(bucketArray);
 	// var wMax = d3.max(barData[0]);
 	// var wMin = d3.min(barData[0]);
 	// var bMax = d3.max(barData[1]);
@@ -464,15 +464,15 @@ var eloBarGroup = d3.select('#elo_bars');
 eloBarGroup.selectAll('g').data(wElo_data).enter().append('rect')
 .attr('x', d => elo_bars_bucket_scale(d[0]))
 .attr('y', d => elo_bars_height_scale(d[1]))
-.attr('width', elo_bars_bucket_scale.bandwidth() / 2)
+.attr('width', elo_bars_bucket_scale.bandwidth() / 2 - 2)
 .attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
 .attr('fill', WHITE_COLOR)
 .attr('opacity' , '1');
 
 eloBarGroup.selectAll('g').data(bElo_data).enter().append('rect')
-.attr('x', d => elo_bars_bucket_scale(d[0]) + elo_bars_bucket_scale.bandwidth() / 2)
+.attr('x', d => elo_bars_bucket_scale(d[0]) + elo_bars_bucket_scale.bandwidth() / 2 + 2)
 .attr('y', d => elo_bars_height_scale(d[1]))
-.attr('width', elo_bars_bucket_scale.bandwidth() / 2)
+.attr('width', elo_bars_bucket_scale.bandwidth() / 2 - 2)
 .attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
 .attr('fill', BLACK_COLOR)
 .attr('opacity' , '1');
