@@ -490,11 +490,94 @@ function plot_it()  {
 	var chess_board_len = hm_width/2.5//400;
 	d3.select('svg').append('g')
 		.attr('transform', 'translate('+(1.5*left_pad+hm_width+2.5*left_pad)+','+(y_pad*2+hm_height)+')')
-		.attr('id', 'info_box')
+		.attr('id', 'chess_board')
 		.append('rect')
 			.attr('width',chess_board_len)
 			.attr('height',chess_board_len)
 			.attr('fill',bg_color)
+
+	CHESS_BOARD_ROWS = [1,2,3,4,5,6,7,8]
+	CHESS_BOARD_COLS = ['a','b','c','d','e','f','g','h']
+	chess_board_scale_x = d3.scaleBand()
+			.domain(CHESS_BOARD_COLS)
+			.range([0,chess_board_len]).paddingInner(0).paddingOuter(0.35)
+
+	chess_board_scale_y = d3.scaleBand()
+			.domain(CHESS_BOARD_ROWS)
+			.range([chess_board_len,0]).paddingInner(0).paddingOuter(0.35)
+
+
+	chess_board_data = []
+	for (row of CHESS_BOARD_ROWS) {
+		for (col of CHESS_BOARD_COLS) {
+			chess_board_data.push({row: row, col: col, piece: null})
+		}
+	}
+
+	for (square of chess_board_data) {
+		if (square.row == 2) {
+			square.piece = 'white_pawn'
+		}
+		else if (square.row == 7) {
+			square.piece = 'black_pawn'
+		}
+		else if (square.row == 1) {
+			if (square.col == 'a' || square.col == 'h') {
+				square.piece = 'white_rook'
+			}
+			else if (square.col == 'b' || square.col == 'g') {
+				square.piece = 'white_knight'
+			}
+			else if (square.col == 'c' || square.col == 'f') {
+				square.piece = 'white_bishop'
+			}
+			else if (square.col == 'd') {
+				square.piece = 'white_king'
+			}
+			else if (square.col == 'e') {
+				square.piece = 'white_queen'
+			}
+		}
+		else if (square.row == 8) {
+			if (square.col == 'a' || square.col == 'h') {
+				square.piece = 'black_rook'
+			}
+			else if (square.col == 'b' || square.col == 'g') {
+				square.piece = 'black_knight'
+			}
+			else if (square.col == 'c' || square.col == 'f') {
+				square.piece = 'black_bishop'
+			}
+			else if (square.col == 'd') {
+				square.piece = 'black_king'
+			}
+			else if (square.col == 'e') {
+				square.piece = 'black_queen'
+			}
+		}
+	}
+
+	console.log(chess_board_data)
+
+	chess_board = d3.select('#chess_board').selectAll('.chess_board_squares').data(chess_board_data)
+	cur_color_code = 1
+	chess_board.enter().append('rect')
+		.attr('class', 'chess_board_squares')
+		.attr('x', d => chess_board_scale_x(d.col))
+		.attr('y', d => chess_board_scale_y(d.row))
+		.attr('width', chess_board_scale_x.bandwidth)
+		.attr('height', chess_board_scale_y.bandwidth)
+		.attr('fill', d => {
+			if (cur_color_code == 0) {
+				if (d.col != 'h') {cur_color_code += 1}
+				return WHITE_COLOR
+			}
+			else if (cur_color_code == 1) {
+				if (d.col != 'h') {cur_color_code -= 1}
+				return BLACK_COLOR
+			}
+		})
+
 
 //TO-DO:
 //       -MAKE IT LOOK LIKE A CHESS BOARD
