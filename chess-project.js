@@ -28,8 +28,10 @@ function plot_it()  {
 		// 	.attr('width', 1.5*left_pad+hm_width+2.5*left_pad+hm_height/2.5+left_pad*3)
 		// 	.attr('height', y_pad*4+hm_height+y_pad+hm_height/2.5-5)
 
-	bg_color = d3.hcl(250,55,50)
-	bg_opacity = 0.18
+
+	//USEFUL CONSTANTS:
+
+	bg_color = d3.hcl(250,55,50,0.18)
 
 	BLACK_COLOR = d3.lab(20, 0,0)
 	WHITE_COLOR = d3.lab(130,0,0)
@@ -48,8 +50,7 @@ function plot_it()  {
 			.attr('width',hm_width)
 			.attr('height',hm_height)
 			.attr('fill',bg_color)
-			.attr('opacity',bg_opacity)
-
+//generate_hm = function(chess_data) {
 	/*-------------------------------------------------------------------------*\
 	|*                             HEATMAP CONSTANTS                           *|
 	\*-------------------------------------------------------------------------*/
@@ -60,6 +61,8 @@ function plot_it()  {
  	/*-------------------------------------------------------------------------*\
 	|*                            HEATMAP MOVE MATRIX                          *|
 	\*-------------------------------------------------------------------------*/
+
+
 
 	opening_move_matrix = {}
 	white_move_domain = []
@@ -169,6 +172,8 @@ function plot_it()  {
 	|*                              HEATMAP CELLS                              *|
 	\*-------------------------------------------------------------------------*/
 
+	d3.select('#hm').selectAll('.hm_squares').remove()
+
 	hm_squares = d3.select('#hm').selectAll('.hm_squares').data(flattened_move_matrix)
 
 	hm_squares.enter().append('rect')
@@ -247,15 +252,19 @@ function plot_it()  {
 			.attr('fill','url(#win_gradient)')
 			//.attr('stroke','blue')
 
+	win_tickFormat = (d => {
+			if (d == 1) {return "1:0"}
+			else if (d == -1) {return "0:1"}
+			else if (d == 0) {return "1:1"}
+			else {return ""}
+		})
+
+
 	d3.select('#color_legend_group').append('g')
-			.attr('id', 'rightaxis')
-			.attr('transform', 'translate('+(y_pad)+',0)')
-			.call(d3.axisRight(win_scale_axis).tickFormat(d => {
-				if (d == 1) {return "1:0"}
-				else if (d == -1) {return "0:1"}
-				else if (d == 0) {return "1:1"}
-				else {return ""}
-			}))
+		.attr('id', 'rightaxis')
+		.attr('transform', 'translate('+(y_pad)+',0)')
+		.call(d3.axisRight(win_scale_axis).tickFormat(win_tickFormat))
+
 
 	/*-------------------------------------------------------------------------*\
 	|*                           HEATMAP MODE BUTTON                           *|
@@ -299,12 +308,7 @@ function plot_it()  {
 			color_legend
 				.attr('fill', d => 'url(#win_gradient)')
 			color_legend_axis
-				.call(d3.axisRight(win_scale_axis).tickFormat(d => {
-					if (d == 1) {return "1:0"}
-					else if (d == -1) {return "0:1"}
-					else if (d == 0) {return "1:1"}
-					else {return ""}
-				}))
+				.call(d3.axisRight(win_scale_axis).tickFormat(win_tickFormat))
 			cur_mode = "wins"
 		}
 	}
@@ -312,10 +316,18 @@ function plot_it()  {
 	hm_button = d3.select('#hm_button')
 	hm_button.on('click', swap_hm);
 
+//}
+
+// generate_hm(chess_data)
+
+// hm_button = d3.select('#hm_button')
+// hm_button.on('click', generate_hm.swap_hm);
 
 //TO-DO: 
 //       -ADD LABELS FOR EVERYTHING RELATED TO THE HEATMAP
 //		 -MAKE STUFF HAPPEN WHEN THE HEATMAP CELLS ARE HOVERED OVER
+
+
 
 /***********************************************************************************\
 |*                                                                                 *|
@@ -332,7 +344,6 @@ function plot_it()  {
 			.attr('width',hm_width+left_pad*1.5)
 			.attr('height',elo_bars_height)
 			.attr('fill',bg_color)
-			.attr('opacity',bg_opacity)
 
 // Cell Selection Scales
 	// each scale works the same for white and black players
@@ -365,7 +376,6 @@ function plot_it()  {
 			.attr('width',info_box_width)
 			.attr('height',hm_height)
 			.attr('fill',bg_color)
-			.attr('opacity',bg_opacity)
 
 //TO-DO:
 //       -FIGURE OUT WHAT INFO TO INCLUDE
@@ -390,7 +400,6 @@ function plot_it()  {
 			.attr('width',chess_board_len)
 			.attr('height',chess_board_len)
 			.attr('fill',bg_color)
-			.attr('opacity',bg_opacity)
 
 //TO-DO: 
 //       -MAKE IT LOOK LIKE A CHESS BOARD
