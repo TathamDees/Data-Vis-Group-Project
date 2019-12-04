@@ -342,15 +342,15 @@ function plot_it()  {
 			.attr('stroke-opacity', 1)
 			.attr('stroke', d3.hcl(315,85,60))
 			.attr('stroke-width', 2.5)
-		//console.log(cur_data)
-		//draw_elo_bars(cur_data.games)
+		console.log(cur_data)
+		makeEloBars(cur_data[0].games);
 		//make_info_box(cur_data.games)
 		//make_chess_board(cur_data.games)
 	}
 	hm_on_mouseout = function () {
 		hm_squares.attr('stroke-opacity', 0)
 		//draw_elo_bars(chess_data)
-		//make_info_box(chess_data)
+		makeEloBars(chess_data);
 		//make_chess_board(chess_data)
 	}
 
@@ -374,108 +374,138 @@ function plot_it()  {
 			.attr('fill', bg_color)
 
 // Cell Selection Scales
-	// each scale works the same for white and black players
-	// white and black bars side by side in each bucket representing playertime
-	var barData = [];
-	var bucketArray = [];
-	var numBuckets = 20;
-	var curLo = 701
-	var q;
-	for (q = 0 ; q < numBuckets ; q++){
-		bucketArray.push(curLo);
-		curLo = curLo + 100;
-	}
 
-	var curWhiteElo;
-	var wEloArray = new Array(numBuckets).fill(0);
-	var wEloBucket;
-	var curBlackElo;
-	var bEloArray = new Array(numBuckets).fill(0);
-	var bEloBucket;
-	chess_data.forEach(d =>{
-		var barDatum = {};
-		barDatum.white_rating = d.white_rating;
-		barDatum.black_rating = d.black_rating;
-		wEloBucket = 0;
-		curWhiteElo = d.white_rating;
-		bEloBucket = 0;
-		curBlackElo = d.black_rating;
-		while(curWhiteElo > 800){
-			wEloBucket = wEloBucket + 1;
-			curWhiteElo = curWhiteElo - 100;
+	//Interactivity for eloBars
+
+makeEloBars = function(games_list){
+		// each scale works the same for white and black players
+		// white and black bars side by side in each bucket representing playertime
+		var barData = [];
+		var bucketArray = [];
+		var numBuckets = 20;
+		var curLo = 701
+		var q;
+		for (q = 0 ; q < numBuckets ; q++){
+			bucketArray.push(curLo);
+			curLo = curLo + 100;
 		}
-		while(curBlackElo > 800){
-			bEloBucket = bEloBucket + 1;
-			curBlackElo = curBlackElo - 100;
+
+		var curWhiteElo;
+		var wEloArray = new Array(numBuckets).fill(0);
+		var wEloBucket;
+		var curBlackElo;
+		var bEloArray = new Array(numBuckets).fill(0);
+		var bEloBucket;
+		games_list.forEach(d =>{
+			var barDatum = {};
+			barDatum.white_rating = d.white_rating;
+			barDatum.black_rating = d.black_rating;
+			wEloBucket = 0;
+			curWhiteElo = d.white_rating;
+			bEloBucket = 0;
+			curBlackElo = d.black_rating;
+			while(curWhiteElo > 800){
+				wEloBucket = wEloBucket + 1;
+				curWhiteElo = curWhiteElo - 100;
+			}
+			while(curBlackElo > 800){
+				bEloBucket = bEloBucket + 1;
+				curBlackElo = curBlackElo - 100;
+			}
+			wEloArray[wEloBucket] = (wEloArray[wEloBucket] + 1);
+			bEloArray[bEloBucket] = (bEloArray[bEloBucket] + 1);
+			barData.push([barDatum.white_rating , barDatum.black_rating]);
+		});
+
+		// console.log(wEloArray);
+		// console.log(bEloArray);
+
+		// console.log(barData);
+
+		// console.log(bucketArray);
+		// var wMax = d3.max(barData[0]);
+		// var wMin = d3.min(barData[0]);
+		// var bMax = d3.max(barData[1]);
+		// var bMin = d3.min(barData[1]);
+
+		// console.log("max and mins");
+		// console.log(wMax);
+		// console.log(wMin);
+		// console.log(bMax);
+		// console.log(bMin);
+
+		var wElo_data = []
+		var wEloForScale = []
+
+		for(var j = 0 ; j < numBuckets ; j++){
+			var wEloDatum = {};
+			wEloDatum.eloRange = bucketArray[j];
+			wEloDatum.numPlayers = wEloArray[j];
+			wElo_data.push([wEloDatum.eloRange , wEloDatum.numPlayers]);
+			wEloForScale.push(wEloDatum);
 		}
-		wEloArray[wEloBucket] = (wEloArray[wEloBucket] + 1);
-		bEloArray[bEloBucket] = (bEloArray[bEloBucket] + 1);
-		barData.push([barDatum.white_rating , barDatum.black_rating]);
-	});
 
-	// console.log(wEloArray);
-	// console.log(bEloArray);
+		var bElo_data = []
 
-	// console.log(barData);
+		for(var j = 0 ; j < numBuckets ; j++){
+			var bEloDatum = {};
+			bEloDatum.eloRange = bucketArray[j];
+			bEloDatum.numPlayers = bEloArray[j];
+			bElo_data.push([bEloDatum.eloRange , bEloDatum.numPlayers]);
+		}
 
-	// console.log(bucketArray);
-	// var wMax = d3.max(barData[0]);
-	// var wMin = d3.min(barData[0]);
-	// var bMax = d3.max(barData[1]);
-	// var bMin = d3.min(barData[1]);
+		elo_bars_height_scale = d3.scaleLinear()
+				.domain(d3.extent([d3.min(wEloArray) , d3.min(bEloArray) , d3.max(wEloArray) , d3.max(bEloArray)]))
+				.range([elo_bars_height , 10]);
 
-	// console.log("max and mins");
-	// console.log(wMax);
-	// console.log(wMin);
-	// console.log(bMax);
-	// console.log(bMin);
+		elo_bars_bucket_scale = d3.scaleBand()
+				.domain(bucketArray)
+				.range([0,hm_width]).paddingInner(0.15).paddingOuter(0.15);
 
-	var wElo_data = []
-	var wEloForScale = []
+	//var eloBarGroup = d3.select('#elo_bars');
+	white_elo_bars = d3.select('#elo_bars').selectAll('.white_elo_bars').data(wElo_data);
+	black_elo_bars = d3.select('#elo_bars').selectAll('.black_elo_bars').data(bElo_data);
 
-	for(var j = 0 ; j < numBuckets ; j++){
-		var wEloDatum = {};
-		wEloDatum.eloRange = bucketArray[j];
-		wEloDatum.numPlayers = wEloArray[j];
-		wElo_data.push([wEloDatum.eloRange , wEloDatum.numPlayers]);
-		wEloForScale.push(wEloDatum);
-	}
+	white_elo_bars.enter().append('rect')
+	.attr('class' , 'white_elo_bars')
+	.attr('x', d => elo_bars_bucket_scale(d[0]))
+	.attr('y', d => elo_bars_height_scale(d[1]))
+	.attr('width', elo_bars_bucket_scale.bandwidth() / 2 - 2)
+	.attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
+	.attr('fill', WHITE_COLOR)
+	.attr('opacity' , '1');
 
-	var bElo_data = []
+	black_elo_bars.enter().append('rect')
+	.attr('class' , 'black_elo_bars')
+	.attr('x', d => elo_bars_bucket_scale(d[0]) + elo_bars_bucket_scale.bandwidth() / 2 + 2)
+	.attr('y', d => elo_bars_height_scale(d[1]))
+	.attr('width', elo_bars_bucket_scale.bandwidth() / 2 - 2)
+	.attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
+	.attr('fill', BLACK_COLOR)
+	.attr('opacity' , '1');
 
-	for(var j = 0 ; j < numBuckets ; j++){
-		var bEloDatum = {};
-		bEloDatum.eloRange = bucketArray[j];
-		bEloDatum.numPlayers = bEloArray[j];
-		bElo_data.push([bEloDatum.eloRange , bEloDatum.numPlayers]);
-	}
+	white_elo_bars.transition().duration(500)
+	.attr('class' , 'white_elo_bars')
+	.attr('x', d => elo_bars_bucket_scale(d[0]))
+	.attr('y', d => elo_bars_height_scale(d[1]))
+	.attr('width', elo_bars_bucket_scale.bandwidth() / 2 - 2)
+	.attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
+	.attr('fill', WHITE_COLOR)
+	.attr('opacity' , '1');
 
-	elo_bars_height_scale = d3.scaleLinear()
-			.domain(d3.extent([d3.min(wEloArray) , d3.min(bEloArray) , d3.max(wEloArray) , d3.max(bEloArray)]))
-			.range([elo_bars_height , 0]);
+	black_elo_bars.transition().duration(500)
+	.attr('class' , 'black_elo_bars')
+	.attr('x', d => elo_bars_bucket_scale(d[0]) + elo_bars_bucket_scale.bandwidth() / 2 + 2)
+	.attr('y', d => elo_bars_height_scale(d[1]))
+	.attr('width', elo_bars_bucket_scale.bandwidth() / 2 - 2)
+	.attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
+	.attr('fill', BLACK_COLOR)
+	.attr('opacity' , '1');
+}
 
-	elo_bars_bucket_scale = d3.scaleBand()
-			.domain(bucketArray)
-			.range([0,hm_width]).paddingInner(0.15).paddingOuter(0.15);
 
-var eloBarGroup = d3.select('#elo_bars');
+makeEloBars(chess_data);
 
-
-eloBarGroup.selectAll('g').data(wElo_data).enter().append('rect')
-.attr('x', d => elo_bars_bucket_scale(d[0]))
-.attr('y', d => elo_bars_height_scale(d[1]))
-.attr('width', elo_bars_bucket_scale.bandwidth() / 2 - 2)
-.attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
-.attr('fill', WHITE_COLOR)
-.attr('opacity' , '1');
-
-eloBarGroup.selectAll('g').data(bElo_data).enter().append('rect')
-.attr('x', d => elo_bars_bucket_scale(d[0]) + elo_bars_bucket_scale.bandwidth() / 2 + 2)
-.attr('y', d => elo_bars_height_scale(d[1]))
-.attr('width', elo_bars_bucket_scale.bandwidth() / 2 - 2)
-.attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
-.attr('fill', BLACK_COLOR)
-.attr('opacity' , '1');
 
 // FOR BUCKETS, MAKE THEM 100 EACH, MIN IS 701 MAX IS 2700
 //        (I.E. [701-800,801-900,...,2501-2600,2601-2700])
