@@ -346,12 +346,13 @@ function plot_it()  {
 		makeEloBars(cur_data[0].games);
 		//make_info_box(cur_data.games)
 		//make_chess_board(cur_data.games)
+		update_chess_pieces(cur_data[0].white_move, cur_data[0].black_move)
 	}
 	hm_on_mouseout = function () {
 		hm_squares.attr('stroke-opacity', 0)
 		//draw_elo_bars(chess_data)
 		makeEloBars(chess_data);
-		//make_chess_board(chess_data)
+		update_chess_pieces()
 	}
 
 	hm_squares.on('mouseover', hm_on_mouseover)
@@ -581,49 +582,35 @@ makeEloBars(chess_data);
 	chess_board_data = []
 	for (row of CHESS_BOARD_ROWS) {
 		for (col of CHESS_BOARD_COLS) {
-			chess_board_data.push({row: row, col: col, piece: null})
+			chess_board_data.push({row: row, col: col, piece_side: null, piece: null})
 		}
 	}
 
 	for (square of chess_board_data) {
-		if (square.row == 2) {
-			square.piece = 'white_pawn'
+		if (square.row == 1 || square.row == 2) {
+			square.piece_side = 'white'
 		}
-		else if (square.row == 7) {
-			square.piece = 'black_pawn'
+		else if (square.row == 7 || square.row == 8) {
+			square.piece_side = 'black'
 		}
-		else if (square.row == 1) {
+		if (square.row == 2 || square.row == 7) {
+			square.piece = 'pawn'
+		}
+		else if (square.row == 1 || square.row == 8) {
 			if (square.col == 'a' || square.col == 'h') {
-				square.piece = 'white_rook'
+				square.piece = 'rook'
 			}
 			else if (square.col == 'b' || square.col == 'g') {
-				square.piece = 'white_knight'
+				square.piece = 'knight'
 			}
 			else if (square.col == 'c' || square.col == 'f') {
-				square.piece = 'white_bishop'
+				square.piece = 'bishop'
 			}
 			else if (square.col == 'd') {
-				square.piece = 'white_queen'
+				square.piece = 'queen'
 			}
 			else if (square.col == 'e') {
-				square.piece = 'white_king'
-			}
-		}
-		else if (square.row == 8) {
-			if (square.col == 'a' || square.col == 'h') {
-				square.piece = 'black_rook'
-			}
-			else if (square.col == 'b' || square.col == 'g') {
-				square.piece = 'black_knight'
-			}
-			else if (square.col == 'c' || square.col == 'f') {
-				square.piece = 'black_bishop'
-			}
-			else if (square.col == 'd') {
-				square.piece = 'black_queen'
-			}
-			else if (square.col == 'e') {
-				square.piece = 'black_king'
+				square.piece = 'king'
 			}
 		}
 	}
@@ -641,13 +628,157 @@ makeEloBars(chess_data);
 		.attr('fill', d => {
 			if (cur_color_code == 0) {
 				if (d.col != 'h') {cur_color_code += 1}
-				return WHITE_COLOR
+				return d3.hcl(255,40,90)
 			}
 			else if (cur_color_code == 1) {
 				if (d.col != 'h') {cur_color_code -= 1}
-				return BLACK_COLOR
+				return d3.hcl(255,50,30)
 			}
 		})
+	chess_pieces_data = []
+	for (square of chess_board_data) {
+		if (square.piece != null) {
+			chess_pieces_data.push(square)
+		}
+	}
+	chess_pieces = d3.select('#chess_board').selectAll('.chess_pieces').data(chess_pieces_data)
+	chess_pieces.enter().append('image')
+		.attr('id', d => {return String(d.col) + String(d.row) + '-' + String(d.piece_side) + "-" + String(d.piece)})
+		.attr('class', "chess_pieces")
+		.attr('x', d => chess_board_scale_x(d.col))
+		.attr('y', d => chess_board_scale_y(d.row))
+		.attr('width', chess_board_scale_x.bandwidth)
+		.attr('height', chess_board_scale_y.bandwidth)
+		.attr('href', d => {return "images/" + String(d.piece_side) + "-" + String(d.piece) + ".png"})
+
+	update_chess_pieces = function(white_move = null, black_move = null) {
+		if (white_move == null && black_move == null) {
+			chess_pieces = d3.selectAll('.chess_pieces').data(chess_pieces_data)
+				.attr('id', d => {return String(d.col) + String(d.row) + "-" + String(d.piece_side) + "-" + String(d.piece)})
+				.attr('x', d => chess_board_scale_x(d.col))
+				.attr('y', d => chess_board_scale_y(d.row))
+				.attr('href', d => {return "images/" + String(d.piece_side) + "-" + String(d.piece) + ".png"})
+		}
+		else {
+			white_piece_to_move = 'pawn'
+			if (white_move[0] == 'N') {
+				white_piece_to_move = 'knight'
+				new_white_col = white_move[1]
+				new_white_row = white_move[2]
+			}
+			else {
+				white_piece_to_move = 'pawn'
+				new_white_col = white_move[0]
+				new_white_row = white_move[1]
+			}
+			if (white_piece_to_move == 'pawn') {
+				white_piece_select = d3.select('#' + new_white_col + String(new_white_row - 1) + '-white-pawn')
+				if (white_piece_select._groups[0][0] == null) {
+					white_piece_select = d3.select('#' + new_white_col + String(new_white_row - 2) + '-white-pawn')
+				}
+				white_piece_select.transition().duration(500)
+					.attr('id', new_white_col + String(new_white_row) + '-white-pawn')
+					.attr('y', chess_board_scale_y(new_white_row))
+			}
+
+			//console.log(black_move)
+			if (black_move[0] == 'N') {
+				black_piece_to_move = 'knight'
+				new_black_col = black_move[1]
+				new_black_row = black_move[2]
+			}
+			else {
+				black_piece_to_move = 'pawn'
+				new_black_col = black_move[0]
+				new_black_row = black_move[1]
+			}
+			if (black_piece_to_move == 'pawn') {
+				//console.log('#' + new_black_col + String(Number(new_black_row) + 1) + '-black-pawn')
+				black_piece_select = d3.select('#' + new_black_col + String(Number(new_black_row) + 1) + '-black-pawn')
+				if (black_piece_select._groups[0][0] == null) {
+					black_piece_select = d3.select('#' + new_black_col + String(Number(new_black_row) + 2) + '-black-pawn')
+				}
+				//console.log(black_piece_select)
+				black_piece_select.transition().duration(500)
+					.attr('id', new_black_col + String(new_black_row) + '-black-pawn')
+					.attr('y', chess_board_scale_y(new_black_row))
+			}
+		}
+		/*
+		else {
+			
+			new_pieces_data = chess_pieces_data
+			if (white_move[0] == 'N') {
+				new_col = white_move[1]
+				new_row = white_move[2]
+				for (piece of new_pieces_data) {
+					if (piece.piece_side == 'white') {
+						if (piece.piece == 'knight') {
+							if ((piece.row + 2 == new_row || piece.row - 2 == new_row || piece.row + 1 == new_row || piece.row -1 == new_row) &&
+								(piece.col.charCodeAt(0) + 2 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) - 2 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) + 1 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) -1 == new_col.charCodeAt(0))) {
+								piece.row == new_row
+								piece.col == new_col
+							}
+						}
+					}
+				}
+			}
+			else {
+				new_col = white_move[0]
+				new_row = white_move[1]
+				for (piece of new_pieces_data) {
+					if (piece.piece_side == 'white') {
+						if (piece.piece == 'pawn') {
+							if ((piece.row + 1 == new_row || piece.row + 2 == new_row) &&
+								(piece.col == new_col)) {
+								piece.row == new_row
+								piece.col == new_col
+							}
+						}
+					}
+				}
+			}
+			if (black_move[0] == 'N') {
+				new_col = black_move[1]
+				new_row = black_move[2]
+				for (piece of new_pieces_data) {
+					if (piece.piece_side == 'black') {
+						if (piece.piece == 'knight') {
+							if ((piece.row + 2 == new_row || piece.row - 2 == new_row || piece.row + 1 == new_row || piece.row -1 == new_row) &&
+								(piece.col.charCodeAt(0) + 2 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) - 2 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) + 1 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) -1 == new_col.charCodeAt(0))) {
+								piece.row == new_row
+								piece.col == new_col
+							}
+						}
+					}
+				}
+			}
+			else {
+				new_col = black_move[0]
+				new_row = black_move[1]
+				for (piece of new_pieces_data) {
+					if (piece.piece_side == 'black') {
+						if (piece.piece == 'pawn') {
+							if ((piece.row - 1 == new_row || piece.row - 2 == new_row) &&
+								(piece.col == new_col)) {
+								piece.row == new_row
+								piece.col == new_col
+							}
+						}
+					}
+				}
+			}
+			console.log(new_pieces_data)
+			chess_pieces = d3.selectAll('.chess_pieces').data(new_pieces_data)
+				.attr('id', d => {return String(d.col) + String(d.row) + ":" + String(d.piece_side) + "-" + String(d.piece)})
+				.attr('x', d => chess_board_scale_x(d.col))
+				.attr('y', d => chess_board_scale_y(d.row))
+				.attr('width', chess_board_scale_x.bandwidth)
+				.attr('height', chess_board_scale_y.bandwidth)
+				.attr('href', d => {return "images/" + String(d.piece_side) + "-" + String(d.piece) + ".png"})
+
+		}*/
+	}
 
 
 //TO-DO:
