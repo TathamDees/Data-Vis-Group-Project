@@ -4,7 +4,7 @@ function plot_it()  {
 /***********************************************************************************\
 |*                                                                                 *|
 |*                                      SETUP                                      *|
-|*                                                                                 *|	               
+|*                                                                                 *|
 \***********************************************************************************/
 
 	chess_data.forEach(d => {
@@ -40,7 +40,7 @@ function plot_it()  {
 /***********************************************************************************\
 |*                                                                                 *|
 |*                                     HEATMAP                                     *|
-|*                                                                                 *|	               
+|*                                                                                 *|
 \***********************************************************************************/
 
 	d3.select('svg').append('g')
@@ -80,8 +80,8 @@ function plot_it()  {
 
 		if (typeof opening_move_matrix[white_move][black_move] === 'undefined') {
 			opening_move_matrix[white_move][black_move] = {
-				'val': 0, 
-				'total_games': 0, 
+				'val': 0,
+				'total_games': 0,
 				'games_list': []
 			}
 		}
@@ -198,7 +198,7 @@ function plot_it()  {
 		.attr('transform', 'translate(0,'+(0)+')')
 		.call(d3.axisLeft(hm_scale_y))
 
-	
+
 	/*-------------------------------------------------------------------------*\
 	|*                              HEATMAP TITLE                              *|
 	\*-------------------------------------------------------------------------*/
@@ -268,8 +268,8 @@ function plot_it()  {
 
 	/*-------------------------------------------------------------------------*\
 	|*                           HEATMAP MODE BUTTON                           *|
-	\*-------------------------------------------------------------------------*/	
-	
+	\*-------------------------------------------------------------------------*/
+
 	d3.select('#hm').append('polygon')
 		.attr('id', 'hm_button')
 		.attr('points', (-left_pad-5)+","+(-y_pad-5)+" 10,"+(-y_pad-5)+" "+(-left_pad-5)+",10")
@@ -323,7 +323,7 @@ function plot_it()  {
 // hm_button = d3.select('#hm_button')
 // hm_button.on('click', generate_hm.swap_hm);
 
-//TO-DO: 
+//TO-DO:
 //       -ADD LABELS FOR EVERYTHING RELATED TO THE HEATMAP
 //		 -MAKE STUFF HAPPEN WHEN THE HEATMAP CELLS ARE HOVERED OVER
 
@@ -332,7 +332,7 @@ function plot_it()  {
 /***********************************************************************************\
 |*                                                                                 *|
 |*	                                   ELO BARS                                    *|
-|*                                                                                 *|	               
+|*                                                                                 *|
 \***********************************************************************************/
 // alternate elo width : hm_width+left_pad*3+hm_width/2.5
 // Cell Selection SVG
@@ -348,8 +348,75 @@ function plot_it()  {
 // Cell Selection Scales
 	// each scale works the same for white and black players
 	// white and black bars side by side in each bucket representing playertime
+	var barData = [];
+	var bucketArray = [];
+	var numBuckets = 20;
+	var curLo = 701
+	var q;
+	for (q = 0 ; q < numBuckets ; q++){
+		bucketArray.push(curLo);
+		curLo = curLo + 100;
+	}
 
-// FOR BUCKETS, MAKE THEM 100 EACH, MIN IS 701 MAX IS 2700 
+	var curWhiteElo;
+	var wEloArray = new Array(numBuckets).fill(0);
+	var wEloBucket;
+	var curBlackElo;
+	var bEloArray = new Array(numBuckets).fill(0);
+	var bEloBucket;
+	chess_data.forEach(d =>{
+		var barDatum = {};
+		barDatum.white_rating = d.white_rating;
+		barDatum.black_rating = d.black_rating;
+		wEloBucket = 0;
+		curWhiteElo = d.white_rating;
+		bEloBucket = 0;
+		curBlackElo = d.black_rating;
+		while(curWhiteElo > 800){
+			wEloBucket = wEloBucket + 1;
+			curWhiteElo = curWhiteElo - 100;
+		}
+		while(curBlackElo > 800){
+			bEloBucket = bEloBucket + 1;
+			curBlackElo = curBlackElo - 100;
+		}
+		wEloArray[wEloBucket] = (wEloArray[wEloBucket] + 1);
+		bEloArray[bEloBucket] = (bEloArray[bEloBucket] + 1);
+		barData.push([barDatum.white_rating , barDatum.black_rating]);
+	});
+
+	console.log(wEloArray);
+	console.log(bEloArray);
+
+	console.log(barData);
+
+	console.log(bucketArray);
+
+	// var wMax = d3.max(barData[0]);
+	// var wMin = d3.min(barData[0]);
+	// var bMax = d3.max(barData[1]);
+	// var bMin = d3.min(barData[1]);
+
+	// console.log("max and mins");
+	// console.log(wMax);
+	// console.log(wMin);
+	// console.log(bMax);
+	// console.log(bMin);
+
+
+	elo_bars_height_scale = d3.scaleLinear()
+			.domain(d3.extent(wEloArray))
+			.range([elo_bars_height , 0]);
+
+
+	elo_bars_bucket_scale = d3.scaleBand()
+			.domain([0 , numBuckets])
+			.range([0,hm_width]).paddingInner(0.15).paddingOuter(0.15);
+
+
+
+
+// FOR BUCKETS, MAKE THEM 100 EACH, MIN IS 701 MAX IS 2700
 //        (I.E. [701-800,801-900,...,2501-2600,2601-2700])
 
 	//band scale for the y axis (ELO buckets)
@@ -364,7 +431,7 @@ function plot_it()  {
 /***********************************************************************************\
 |*                                                                                 *|
 |*	                                   INFO BOX                                    *|
-|*                                                                                 *|	               
+|*                                                                                 *|
 \***********************************************************************************/
 
 
@@ -388,7 +455,7 @@ function plot_it()  {
 /***********************************************************************************\
 |*                                                                                 *|
 |*	                                  CHESS BOARD                                  *|
-|*                                                                                 *|	               
+|*                                                                                 *|
 \***********************************************************************************/
 
 
@@ -401,9 +468,8 @@ function plot_it()  {
 			.attr('height',chess_board_len)
 			.attr('fill',bg_color)
 
-//TO-DO: 
+//TO-DO:
 //       -MAKE IT LOOK LIKE A CHESS BOARD
 //		 -FIGURE OUT HOW TO DISPLAY PIECES
 //		 -MAKE WAY FOR PIECES TO MOVE PROPERLY
 }
-
