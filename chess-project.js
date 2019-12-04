@@ -371,7 +371,7 @@ function plot_it()  {
 		.append('rect')
 			.attr('width',hm_width+left_pad*1.5)
 			.attr('height',elo_bars_height)
-			.attr('fill',bg_color)
+			.attr('fill', bg_color)
 
 // Cell Selection Scales
 	// each scale works the same for white and black players
@@ -419,7 +419,6 @@ function plot_it()  {
 	console.log(barData);
 
 	console.log(bucketArray);
-
 	// var wMax = d3.max(barData[0]);
 	// var wMin = d3.min(barData[0]);
 	// var bMax = d3.max(barData[1]);
@@ -431,18 +430,52 @@ function plot_it()  {
 	// console.log(bMax);
 	// console.log(bMin);
 
+	var wElo_data = []
+	var wEloForScale = []
+
+	for(var j = 0 ; j < numBuckets ; j++){
+		var wEloDatum = {};
+		wEloDatum.eloRange = bucketArray[j];
+		wEloDatum.numPlayers = wEloArray[j];
+		wElo_data.push([wEloDatum.eloRange , wEloDatum.numPlayers]);
+		wEloForScale.push(wEloDatum);
+	}
+
+	var bElo_data = []
+
+	for(var j = 0 ; j < numBuckets ; j++){
+		var bEloDatum = {};
+		bEloDatum.eloRange = bucketArray[j];
+		bEloDatum.numPlayers = bEloArray[j];
+		bElo_data.push([bEloDatum.eloRange , bEloDatum.numPlayers]);
+	}
 
 	elo_bars_height_scale = d3.scaleLinear()
-			.domain(d3.extent(wEloArray))
+			.domain(d3.extent([d3.min(wEloArray) , d3.min(bEloArray) , d3.max(wEloArray) , d3.max(bEloArray)]))
 			.range([elo_bars_height , 0]);
 
-
 	elo_bars_bucket_scale = d3.scaleBand()
-			.domain([0 , numBuckets])
+			.domain(bucketArray)
 			.range([0,hm_width]).paddingInner(0.15).paddingOuter(0.15);
 
+var eloBarGroup = d3.select('#elo_bars');
 
 
+eloBarGroup.selectAll('g').data(wElo_data).enter().append('rect')
+.attr('x', d => elo_bars_bucket_scale(d[0]))
+.attr('y', d => elo_bars_height_scale(d[1]))
+.attr('width', elo_bars_bucket_scale.bandwidth() / 2)
+.attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
+.attr('fill', WHITE_COLOR)
+.attr('opacity' , '1');
+
+eloBarGroup.selectAll('g').data(bElo_data).enter().append('rect')
+.attr('x', d => elo_bars_bucket_scale(d[0]) + elo_bars_bucket_scale.bandwidth() / 2)
+.attr('y', d => elo_bars_height_scale(d[1]))
+.attr('width', elo_bars_bucket_scale.bandwidth() / 2)
+.attr('height', d => elo_bars_height - elo_bars_height_scale(d[1]))
+.attr('fill', BLACK_COLOR)
+.attr('opacity' , '1');
 
 // FOR BUCKETS, MAKE THEM 100 EACH, MIN IS 701 MAX IS 2700
 //        (I.E. [701-800,801-900,...,2501-2600,2601-2700])
@@ -454,7 +487,6 @@ function plot_it()  {
 	//linear scale for the x axis (each matchup's ELO distribution)
 		// Domain is from 0 to 100% of players in each bucket
 		// Range is from min to max x value (left to right of eloBar)
-
 
 /***********************************************************************************\
 |*                                                                                 *|
@@ -532,10 +564,10 @@ function plot_it()  {
 				square.piece = 'white_bishop'
 			}
 			else if (square.col == 'd') {
-				square.piece = 'white_king'
+				square.piece = 'white_queen'
 			}
 			else if (square.col == 'e') {
-				square.piece = 'white_queen'
+				square.piece = 'white_king'
 			}
 		}
 		else if (square.row == 8) {
@@ -549,10 +581,10 @@ function plot_it()  {
 				square.piece = 'black_bishop'
 			}
 			else if (square.col == 'd') {
-				square.piece = 'black_king'
+				square.piece = 'black_queen'
 			}
 			else if (square.col == 'e') {
-				square.piece = 'black_queen'
+				square.piece = 'black_king'
 			}
 		}
 	}
@@ -580,7 +612,7 @@ function plot_it()  {
 
 
 //TO-DO:
-//       -MAKE IT LOOK LIKE A CHESS BOARD
+//       -MAKE IT LOOK LIKE A CHESS BOARD -- DONE
 //		 -FIGURE OUT HOW TO DISPLAY PIECES
 //		 -MAKE WAY FOR PIECES TO MOVE PROPERLY
 }
