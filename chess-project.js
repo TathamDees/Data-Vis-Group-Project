@@ -185,7 +185,7 @@ function plot_it()  {
 	cur_mode = "wins"
 
 	/*-------------------------------------------------------------------------*\
-	|*                              HEATMAP  AXES                              *|
+	|*                              HEATMAP AXES                               *|
 	\*-------------------------------------------------------------------------*/
 
 	d3.select('#hm').append('g')
@@ -328,6 +328,34 @@ function plot_it()  {
 //		 -MAKE STUFF HAPPEN WHEN THE HEATMAP CELLS ARE HOVERED OVER
 
 
+	/*-------------------------------------------------------------------------*\
+	|*                          HEATMAP INTERACTIVITY                          *|
+	\*-------------------------------------------------------------------------*/
+
+	hm_squares = d3.select('#hm').selectAll('.hm_squares')
+
+	hm_on_mouseover = function () {
+		//hm_squares.attr('stroke-opacity', 0)
+		cur_square = d3.select(this)
+		cur_data = cur_square.data()
+		cur_square
+			.attr('stroke-opacity', 1)
+			.attr('stroke', d3.hcl(315,85,60))
+			.attr('stroke-width', 2.5)
+		//console.log(cur_data)
+		//draw_elo_bars(cur_data.games)
+		//make_info_box(cur_data.games)
+		//make_chess_board(cur_data.games)
+	}
+	hm_on_mouseout = function () {
+		hm_squares.attr('stroke-opacity', 0)
+		//draw_elo_bars(chess_data)
+		//make_info_box(chess_data)
+		//make_chess_board(chess_data)
+	}
+
+	hm_squares.on('mouseover', hm_on_mouseover)
+	hm_squares.on('mouseout', hm_on_mouseout)
 
 /***********************************************************************************\
 |*                                                                                 *|
