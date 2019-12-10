@@ -357,15 +357,6 @@ function plot_it()  {
 
 //}
 
-// generate_hm(chess_data)
-
-// hm_button = d3.select('#hm_button')
-// hm_button.on('click', generate_hm.swap_hm);
-
-//TO-DO:
-//       -ADD LABELS FOR EVERYTHING RELATED TO THE HEATMAP
-//		 -MAKE STUFF HAPPEN WHEN THE HEATMAP CELLS ARE HOVERED OVER
-
 
 	/*-------------------------------------------------------------------------*\
 	|*                          HEATMAP INTERACTIVITY                          *|
@@ -385,16 +376,15 @@ function plot_it()  {
 				.attr('stroke-width', 2.5)
 			//console.log(cur_data)
 			makeEloBars(cur_data[0].games);
-			//make_info_box(cur_data.games)
-			//make_chess_board(cur_data.games)
+			make_info_box(cur_data[0].games)
 			update_chess_pieces(cur_data[0].white_move, cur_data[0].black_move)
 		}
 	}
 	hm_on_mouseout = function () {
 		if (!square_selected) {
 			hm_squares.attr('stroke-opacity', 0)
-			//draw_elo_bars(chess_data)
 			makeEloBars(chess_data);
+			make_info_box(chess_data)
 			update_chess_pieces()
 		}
 	}
@@ -586,13 +576,93 @@ makeEloBars(chess_data);
 
 
 	var info_box_width = hm_width/2.5//400;
+	var info_box_height = hm_height
 	d3.select('svg').append('g')
 		.attr('transform', 'translate('+(1.5*left_pad+hm_width+2.5*left_pad)+','+(y_pad)+')')
 		.attr('id', 'info_box')
 		.append('rect')
 			.attr('width',info_box_width)
-			.attr('height',hm_height)
+			.attr('height',info_box_height)
 			.attr('fill',bg_color)
+
+	make_info_box = function(games_list) {
+		total_white_wins 	= 0
+		total_black_wins 	= 0
+		total_draws 	 	= 0
+
+		for (game of games_list){
+			if (game.winner == 'white') {
+				total_white_wins += 1
+			}
+			else if (game.winner == 'black') {
+				total_black_wins += 1
+			}
+			else {
+				total_draws += 1
+			}
+		}
+
+		pie_data = {white:total_white_wins, black:total_black_wins, draws:total_draws}
+
+		pie_colors = d3.scaleOrdinal()
+		  .domain(pie_data)
+		  .range([WHITE_COLOR, BLACK_COLOR, DRAW_COLOR])
+
+		pie_chart = d3.pie().value(d => d.value)(d3.entries(pie_data))
+
+		d3.select('#info_box').selectAll('.pie_chart').remove()
+		d3.select('#info_box').selectAll('.pie_chart').data(pie_chart).enter().append('path')
+			.attr('class', 'pie_chart')
+			.attr('transform', 'translate('+info_box_width/2+','+info_box_height*0.35+')')
+			.attr('d', d3.arc()
+		    	.innerRadius(0)
+		   		.outerRadius(info_box_width/2 - 30)
+			)
+			.attr('fill', d => pie_colors(d.data.key))
+			.style("opacity", 1)
+
+		d3.select('#info_box').select('#pie_title').remove()
+		d3.select('#info_box').append('text')
+			.attr('id', 'pie_title')
+			.attr('x', info_box_width/2)
+			.attr('y', info_box_height*0.08)
+			.text('Game Outcomes')
+			.attr('text-anchor', 'middle')
+			.attr('font-size', 22)
+
+		d3.select('#info_box').selectAll('.info_text').remove()
+
+		d3.select('#info_box').append('text')
+			.attr('class', 'info_text')
+			.attr('x', info_box_width/2)
+			.attr('y', info_box_height-165)
+			.text('Total Games Played: ' + String(total_white_wins+total_black_wins+total_draws))
+			.attr('text-anchor', 'middle')
+			.attr('font-size', 18)
+
+		d3.select('#info_box').append('text')
+			.attr('class', 'info_text')
+			.attr('x', info_box_width/2)
+			.attr('y', info_box_height-110)
+			.text('White Wins: ' + String(total_white_wins))
+			.attr('text-anchor', 'middle')
+
+		d3.select('#info_box').append('text')
+			.attr('class', 'info_text')
+			.attr('x', info_box_width/2)
+			.attr('y', info_box_height-80)
+			.text('Black Wins: ' + String(total_black_wins))
+			.attr('text-anchor', 'middle')
+
+		d3.select('#info_box').append('text')
+			.attr('class', 'info_text')
+			.attr('x', info_box_width/2)
+			.attr('y', info_box_height-50)
+			.text('Draws: ' + String(total_draws))
+			.attr('text-anchor', 'middle')
+
+	}
+	make_info_box(chess_data)
 
 //TO-DO:
 //       -FIGURE OUT WHAT INFO TO INCLUDE
