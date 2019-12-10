@@ -193,17 +193,38 @@ function plot_it()  {
 		.attr('transform', 'translate(0,'+(0)+')')
 		.call(d3.axisTop(hm_scale_x))
 
+	d3.select('#hm').append('text')
+		.attr('id', 'x_label')
+		.attr('x', hm_width/2)
+		.attr('y', -22)
+		.text('White Move')
+		.attr('text-anchor', 'middle')
+
+
 	d3.select('#hm').append('g')
 		.attr('id', 'leftaxis')
 		.attr('transform', 'translate(0,'+(0)+')')
 		.call(d3.axisLeft(hm_scale_y))
+
+	d3.select('#hm').append('text')
+		.attr('id', 'y_label')
+		.attr('x', -hm_height/2)
+		.attr('y', -28)
+		.attr('transform', 'rotate(270)')
+		.text('Black Move')
+		.attr('text-anchor', 'middle')
 
 
 	/*-------------------------------------------------------------------------*\
 	|*                              HEATMAP TITLE                              *|
 	\*-------------------------------------------------------------------------*/
 
-
+	d3.select('#hm').append('text')
+		.attr('id', 'title')
+		.attr('x', hm_width/2)
+		.attr('y', hm_height+y_pad/2-5)
+		.text('Game Outcomes By Opening Moves')
+		.attr('text-anchor', 'middle')
 
 
 	/*-------------------------------------------------------------------------*\
@@ -265,6 +286,14 @@ function plot_it()  {
 		.attr('transform', 'translate('+(y_pad)+',0)')
 		.call(d3.axisRight(win_scale_axis).tickFormat(win_tickFormat))
 
+	d3.select('#color_legend_group').append('text')
+		.attr('id', 'label')
+		.attr('x', hm_height/2)
+		.attr('y', -left_pad*1.8)
+		.attr('transform', 'rotate(90)')
+		.text('White Wins : Black Wins')
+		.attr('text-anchor', 'middle')
+
 
 	/*-------------------------------------------------------------------------*\
 	|*                           HEATMAP MODE BUTTON                           *|
@@ -287,17 +316,23 @@ function plot_it()  {
 	swap_hm = function () {
 		hm_squares2 = d3.select('#hm').selectAll('.hm_squares')
 		hm_button = d3.select('#hm_button')
+		hm_title = d3.select('#hm').select('#title')
 		color_legend = d3.select('#color_legend')
 		color_legend_axis = d3.select('#color_legend_group').select('#rightaxis')
+		color_legend_label = d3.select('#color_legend_group').select('#label')
 		if (cur_mode == "wins") {
 			hm_squares2.transition().duration(300)
 				.attr('fill', d => games_count_color(d.games_count))
 			hm_button.transition().duration(300)
 				.attr('fill', win_color.mid())
+			hm_title
+				.text('Total Games Played By Opening Moves')
 			color_legend
 				.attr('fill', d => 'url(#game_count_gradient)')
 			color_legend_axis
 				.call(d3.axisRight(count_lum_scale_axis))
+			color_legend_label
+				.text('Total Games Played')
 			cur_mode = "count"
 		}
 		else if (cur_mode == "count") {
@@ -305,10 +340,14 @@ function plot_it()  {
 				.attr('fill', d => win_color(d.val))
 			hm_button.transition().duration(300)
 				.attr('fill', games_count_color.mid())
+			hm_title
+				.text('Game Outcomes By Opening Moves')
 			color_legend
 				.attr('fill', d => 'url(#win_gradient)')
 			color_legend_axis
 				.call(d3.axisRight(win_scale_axis).tickFormat(win_tickFormat))
+			color_legend_label
+				.text('White Wins : Black Wins')
 			cur_mode = "wins"
 		}
 	}
@@ -765,85 +804,5 @@ makeEloBars(chess_data);
 				.attr('y', chess_board_scale_y(new_black_row))
 			
 		}
-		/*
-		else {
-			
-			new_pieces_data = chess_pieces_data
-			if (white_move[0] == 'N') {
-				new_col = white_move[1]
-				new_row = white_move[2]
-				for (piece of new_pieces_data) {
-					if (piece.piece_side == 'white') {
-						if (piece.piece == 'knight') {
-							if ((piece.row + 2 == new_row || piece.row - 2 == new_row || piece.row + 1 == new_row || piece.row -1 == new_row) &&
-								(piece.col.charCodeAt(0) + 2 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) - 2 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) + 1 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) -1 == new_col.charCodeAt(0))) {
-								piece.row == new_row
-								piece.col == new_col
-							}
-						}
-					}
-				}
-			}
-			else {
-				new_col = white_move[0]
-				new_row = white_move[1]
-				for (piece of new_pieces_data) {
-					if (piece.piece_side == 'white') {
-						if (piece.piece == 'pawn') {
-							if ((piece.row + 1 == new_row || piece.row + 2 == new_row) &&
-								(piece.col == new_col)) {
-								piece.row == new_row
-								piece.col == new_col
-							}
-						}
-					}
-				}
-			}
-			if (black_move[0] == 'N') {
-				new_col = black_move[1]
-				new_row = black_move[2]
-				for (piece of new_pieces_data) {
-					if (piece.piece_side == 'black') {
-						if (piece.piece == 'knight') {
-							if ((piece.row + 2 == new_row || piece.row - 2 == new_row || piece.row + 1 == new_row || piece.row -1 == new_row) &&
-								(piece.col.charCodeAt(0) + 2 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) - 2 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) + 1 == new_col.charCodeAt(0) || piece.col.charCodeAt(0) -1 == new_col.charCodeAt(0))) {
-								piece.row == new_row
-								piece.col == new_col
-							}
-						}
-					}
-				}
-			}
-			else {
-				new_col = black_move[0]
-				new_row = black_move[1]
-				for (piece of new_pieces_data) {
-					if (piece.piece_side == 'black') {
-						if (piece.piece == 'pawn') {
-							if ((piece.row - 1 == new_row || piece.row - 2 == new_row) &&
-								(piece.col == new_col)) {
-								piece.row == new_row
-								piece.col == new_col
-							}
-						}
-					}
-				}
-			}
-			console.log(new_pieces_data)
-			chess_pieces = d3.selectAll('.chess_pieces').data(new_pieces_data)
-				.attr('id', d => {return String(d.col) + String(d.row) + ":" + String(d.piece_side) + "-" + String(d.piece)})
-				.attr('x', d => chess_board_scale_x(d.col))
-				.attr('y', d => chess_board_scale_y(d.row))
-				.attr('width', chess_board_scale_x.bandwidth)
-				.attr('height', chess_board_scale_y.bandwidth)
-				.attr('href', d => {return "images/" + String(d.piece_side) + "-" + String(d.piece) + ".png"})
-
-		}*/
 	}
-
-
-//TO-DO:
-//       -MAKE IT LOOK LIKE A CHESS BOARD -- DONE
-//		 -FIGURE OUT HOW TO DISPLAY PIECES
-//		 -MAKE WAY FOR PIECES TO MOVE PROPERLY
 }
