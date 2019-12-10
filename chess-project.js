@@ -433,6 +433,9 @@ function plot_it()  {
 	//Interactivity for eloBars
 
 makeEloBars = function(games_list){
+
+		d3.select('#elo_bars').selectAll('text').remove()
+
 		// each scale works the same for white and black players
 		// white and black bars side by side in each bucket representing playertime
 		var barData = [];
@@ -554,10 +557,6 @@ makeEloBars = function(games_list){
 		.text('ELO Score Range')
 		.attr('font-size', 15)
 		.attr('text-anchor', 'middle')
-
-	d3.select('#elo_bars').selectAll('.bottomaxis_labels').remove()
-	d3.select('#elo_bars').selectAll('.bottomaxis_labels2').remove()
-	d3.select('#elo_bars').selectAll('.bottomaxis_labels3').remove()
 
 	d3.select('#elo_bars').selectAll('.bottomaxis_labels').data(bucketArray).enter().append('text')
 		.attr('class' , 'bottomaxis_labels')
