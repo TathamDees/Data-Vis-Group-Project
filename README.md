@@ -17,7 +17,7 @@ In addition to the above, the user can press the "Switch Mode" button in the upp
 
 Essentially all of our code in located in the `chess-project.js` file, and the only library we use is `d3.js`.  
 
-Our data is contained in `chess.zip` and `games.csv`, and `games_without_duplicated` is a cleaned version of the data with duplicates removed.
+Our data is contained in `chess.zip` and `games.csv`, and `games_without_duplicated` is a cleaned version of the data with duplicates removed.  `chess_data.db` is an SQL database of the data, used in performing the aforementioned cleaning.
 
 As you would expect, our process book is located in `Process Book.pdf`.
 
