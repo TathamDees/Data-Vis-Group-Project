@@ -15,10 +15,10 @@ In addition to the above, the user can press the "Switch Mode" button in the upp
 
 ## What's Included?
 
-Essentially all of our code in located in the `chess-project.js` file, and the only library we used is `d3.js`.  
+Essentially all of our code in located in the `chess-project.js` file, and the only library we use is `d3.js`.  
 
-Our data is contained in `chess.zip` and `games.csv`, with `games_without_duplicated` as a cleaned version of the data with duplicates reomved.
+Our data is contained in `chess.zip` and `games.csv`, and `games_without_duplicated` is a cleaned version of the data with duplicates removed.
 
 As you would expect, our process book is located in `Process Book.pdf`.
 
-Finally, the `images/` folder contains the png images used to display the pieces in the chess board visualization.
+Finally, the `images` folder contains the png images used to display the pieces in the chess board visualization.
