@@ -222,9 +222,10 @@ function plot_it()  {
 	d3.select('#hm').append('text')
 		.attr('id', 'title')
 		.attr('x', hm_width/2)
-		.attr('y', hm_height+y_pad/2-5)
+		.attr('y', hm_height+y_pad/2+3)
 		.text('Game Outcomes By Opening Moves')
 		.attr('text-anchor', 'middle')
+		.attr('font-size', 20)
 
 
 	/*-------------------------------------------------------------------------*\
@@ -542,7 +543,46 @@ makeEloBars = function(games_list){
 	.attr('opacity' , '1');
 
 	d3.select('#elo_bars').select('#bottomaxis')
-	.call(d3.axisBottom(elo_bars_bucket_scale))
+	.call(d3.axisBottom(elo_bars_bucket_scale).tickFormat(d => {
+		return ""
+	}))
+
+	d3.select('#elo_bars').append('text')
+		.attr('id' , 'bottom_label')
+		.attr('x', elo_bars_width/2)
+		.attr('y', elo_bars_height+50)
+		.text('ELO Score Range')
+		.attr('font-size', 15)
+		.attr('text-anchor', 'middle')
+
+	d3.select('#elo_bars').selectAll('.bottomaxis_labels').remove()
+	d3.select('#elo_bars').selectAll('.bottomaxis_labels2').remove()
+	d3.select('#elo_bars').selectAll('.bottomaxis_labels3').remove()
+
+	d3.select('#elo_bars').selectAll('.bottomaxis_labels').data(bucketArray).enter().append('text')
+		.attr('class' , 'bottomaxis_labels')
+		.attr('x', d => elo_bars_bucket_scale(d)+elo_bars_bucket_scale.bandwidth()/2)
+		.attr('y', elo_bars_height+15)
+		.text(d => String(d))
+		.attr('font-size', 10)
+		.attr('text-anchor', 'middle')
+
+	d3.select('#elo_bars').selectAll('.bottomaxis_labels2').data(bucketArray).enter().append('text')
+		.attr('class' , 'bottomaxis_labels2')
+		.attr('x', d => elo_bars_bucket_scale(d)+elo_bars_bucket_scale.bandwidth()/2)
+		.attr('y', elo_bars_height+21)
+		.text('–')
+		.attr('font-size', 10)
+		.attr('text-anchor', 'middle')
+
+	d3.select('#elo_bars').selectAll('.bottomaxis_labels3').data(bucketArray).enter().append('text')
+		.attr('class' , 'bottomaxis_labels3')
+		.attr('x', d => elo_bars_bucket_scale(d)+elo_bars_bucket_scale.bandwidth()/2)
+		.attr('y', elo_bars_height+29)
+		.text(d => String(d+99))
+		.attr('font-size', 10)
+		.attr('text-anchor', 'middle')
+
 
 	d3.select('#elo_bars').select('#leftaxis')
 	.call(d3.axisLeft(elo_bars_height_scale).tickFormat(d => {
